@@ -18,9 +18,10 @@ type GoodHandler struct {
 }
 
 type ServiceProvider interface {
-	CreateGood(ctx context.Context, req *models.CreateRequest) (*models.Goods, error)
-	UpdateGood(ctx context.Context, req *models.UpdateRequest) (*models.Goods, error)
+	CreateGood(ctx context.Context, req *models.CreateRequest) (*models.Good, error)
+	UpdateGood(ctx context.Context, req *models.UpdateRequest) (*models.Good, error)
 	DeleteGood(ctx context.Context, req *models.DeleteRequest) (*models.DeleteResponse, error)
+	GetGoods(ctx context.Context, limit, offset int) (*models.ListGoodsResponse, error)
 }
 
 func NewGoodHandler(log *slog.Logger, provider ServiceProvider) *GoodHandler {
@@ -44,8 +45,13 @@ func (h *GoodHandler) InitRoutes() *gin.Engine {
 }
 
 const (
+	defaultLimit  = 10
+	defaultOffset = 1
+
 	projectCtx = "projectId"
 	idCtx      = "id"
+	limitCtx   = "limit"
+	offsetCtx  = "offset"
 )
 
 func (h *GoodHandler) CreateGood(c *gin.Context) {
@@ -141,7 +147,29 @@ func (h *GoodHandler) DeleteGood(c *gin.Context) {
 }
 
 func (h *GoodHandler) ListGoods(c *gin.Context) {
+	const op = "handlers.ListGoods"
 
+	log := h.log.With(slog.String("op", op))
+
+	limit := defaultLimit
+	offset := defaultOffset
+
+	limit, err := getID(c, limitCtx)
+	if err != nil {
+		response.NewErrorResponse(c, log, http.StatusBadRequest, err.Error())
+	}
+
+	offset, err = getID(c, offsetCtx)
+	if err != nil {
+		response.NewErrorResponse(c, log, http.StatusBadRequest, err.Error())
+	}
+
+	output, err := h.serviceProvider.GetGoods(c, limit, offset)
+	if err != nil {
+		response.NewErrorResponse(c, log, http.StatusInternalServerError, err.Error())
+	}
+
+	c.JSON(http.StatusOK, output)
 }
 
 func (h *GoodHandler) ReprioritizeGood(c *gin.Context) {

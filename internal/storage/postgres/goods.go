@@ -11,10 +11,10 @@ const (
 	removedBase = false
 )
 
-func (s *Storage) Create(projectID int, name string, priority int) (*models.Goods, error) {
+func (s *Storage) Create(projectID int, name string, priority int) (*models.Good, error) {
 	const op = "storage.goods.Create"
 
-	var good models.Goods
+	var good models.Good
 
 	row := s.db.QueryRow(createGoodQuery, projectID, name, priority, removedBase)
 
@@ -25,7 +25,7 @@ func (s *Storage) Create(projectID int, name string, priority int) (*models.Good
 	return &good, nil
 }
 
-func (s *Storage) GetAllGoods() (*[]models.Goods, error) {
+func (s *Storage) GetAllGoods() (*[]models.Good, error) {
 	const op = "storage.goods.GetAllGoods"
 
 	rows, err := s.db.Query(getAllGoods)
@@ -34,10 +34,10 @@ func (s *Storage) GetAllGoods() (*[]models.Goods, error) {
 	}
 	defer rows.Close()
 
-	var goods []models.Goods
+	var goods []models.Good
 
 	for rows.Next() {
-		value := models.Goods{}
+		value := models.Good{}
 
 		if err := rows.Scan(&value); err != nil {
 			return nil, wrapper.Wrap(op, err)
@@ -49,10 +49,10 @@ func (s *Storage) GetAllGoods() (*[]models.Goods, error) {
 	return &goods, nil
 }
 
-func (s *Storage) UpdateGood(req *models.UpdateRequest) (*models.Goods, error) {
+func (s *Storage) UpdateGood(req *models.UpdateRequest) (*models.Good, error) {
 	const op = "storage.goods.UpdateGood"
 
-	value := models.Goods{}
+	value := models.Good{}
 	row := s.db.QueryRow(getGood, req.ID, req.ProjectID)
 	if err := row.Scan(&value); err != nil {
 		return nil, wrapper.Wrap(op, errors.New("no good with this params"))
@@ -76,4 +76,28 @@ func (s *Storage) DeleteGood(req *models.DeleteRequest) (*models.DeleteResponse,
 	}
 
 	return &value, nil
+}
+
+func (s *Storage) ListGoods(limit, offset int) (*[]models.Good, error) {
+	const op = "storage.goods.ListGoods"
+
+	rows, err := s.db.Query(listGoods, limit, offset)
+	if err != nil {
+		return nil, wrapper.Wrap(op, err)
+	}
+	defer rows.Close()
+
+	var goods []models.Good
+
+	for rows.Next() {
+		value := models.Good{}
+
+		if err := rows.Scan(&value); err != nil {
+			return nil, wrapper.Wrap(op, err)
+		}
+
+		goods = append(goods, value)
+	}
+
+	return &goods, nil
 }

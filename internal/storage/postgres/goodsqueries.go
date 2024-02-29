@@ -12,4 +12,4 @@ const updateGood = `UPDATE goods SET name=$1, description=$2
 
 const deleteGood = `DELETE FROM goods WHERE id=$1 AND project_id=$2 RETURNING id, project_id, removed`
 
-//const listGoods = `SELECT * FROM goods ORDER BY id LIMIT $1 OFFSET $2`
+const listGoods = `SELECT * FROM goods ORDER BY id LIMIT $1 OFFSET $2`

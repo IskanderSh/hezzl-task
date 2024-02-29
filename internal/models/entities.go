@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-type Goods struct {
+type Good struct {
 	ID          int           `db:"id"`
 	ProjectID   int           `db:"project_id"`
 	Name        string        `db:"name"`
@@ -33,4 +33,16 @@ type DeleteResponse struct {
 	ID        int  `json:"id" db:"id"`
 	ProjectID int  `json:"project_id" db:"project_id"`
 	Removed   bool `json:"removed" db:"removed"`
+}
+
+type ListGoodsResponse struct {
+	Meta  Meta   `json:"meta"`
+	Goods []Good `json:"goods"`
+}
+
+type Meta struct {
+	Total   int `json:"total"`
+	Removed int `json:"removed"`
+	Limit   int `json:"limit"`
+	Offset  int `json:"offset"`
 }
