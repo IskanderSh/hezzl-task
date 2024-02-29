@@ -1,0 +1,25 @@
+package models
+
+import "time"
+
+type Goods struct {
+	ID          int           `db:"id"`
+	ProjectID   int           `db:"project_id"`
+	Name        string        `db:"name"`
+	Description string        `db:"description"`
+	Priority    int           `db:"priority"`
+	Removed     bool          `db:"removed"`
+	CreatedAt   time.Duration `db:"created_at"`
+}
+
+type CreateRequest struct {
+	ProjectID int    `json:"project_id,omitempty" db:"project_id"`
+	Name      string `json:"name" db:"name"`
+}
+
+type UpdateRequest struct {
+	ID          int    `json:"id,omitempty" db:"id"`
+	ProjectID   int    `json:"project_id,omitempty" db:"project_id"`
+	Name        string `json:"name" db:"name"`
+	Description string `json:"description" db:"description"`
+}

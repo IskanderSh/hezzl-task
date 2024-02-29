@@ -29,6 +29,7 @@ type Storage struct {
 }
 
 type Cache struct {
+	Host string        `yaml:"host"`
 	Port int           `yaml:"port"`
 	TTL  time.Duration `yaml:"ttl"`
 }

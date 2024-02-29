@@ -8,6 +8,7 @@ storage:
   user: postgres
   password: password
 cache:
+  host: localhost
   port: 6379
   ttl: 1m
 broker:

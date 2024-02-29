@@ -8,6 +8,7 @@ import (
 	"github.com/IskanderSh/hezzl-task/internal/config"
 	"github.com/IskanderSh/hezzl-task/internal/handlers"
 	"github.com/IskanderSh/hezzl-task/internal/services"
+	redis "github.com/IskanderSh/hezzl-task/internal/storage/cache"
 	"github.com/IskanderSh/hezzl-task/internal/storage/postgres"
 )
 
@@ -22,8 +23,10 @@ func NewServer(log *slog.Logger, cfg *config.Config) *Server {
 		panic(err)
 	}
 
+	cache := redis.NewCache(cfg.Cache)
+
 	// Services
-	goodService := services.NewGoodService(log, storage)
+	goodService := services.NewGoodService(log, storage, cache)
 
 	// Handlers
 	handler := handlers.NewGoodHandler(log, goodService)
