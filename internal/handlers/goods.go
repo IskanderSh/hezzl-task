@@ -22,6 +22,7 @@ type ServiceProvider interface {
 	UpdateGood(ctx context.Context, req *models.UpdateRequest) (*models.Good, error)
 	DeleteGood(ctx context.Context, req *models.DeleteRequest) (*models.DeleteResponse, error)
 	GetGoods(ctx context.Context, limit, offset int) (*models.ListGoodsResponse, error)
+	ReprioritizeGood(ctx context.Context, req *models.ReprioritizeRequest) (*models.ReprioritizeResponse, error)
 }
 
 func NewGoodHandler(log *slog.Logger, provider ServiceProvider) *GoodHandler {
@@ -173,7 +174,34 @@ func (h *GoodHandler) ListGoods(c *gin.Context) {
 }
 
 func (h *GoodHandler) ReprioritizeGood(c *gin.Context) {
+	const op = "handlers.ReprioritizeGood"
 
+	log := h.log.With(slog.String("op", op))
+
+	id, err := getID(c, idCtx)
+	if err != nil {
+		response.NewErrorResponse(c, log, http.StatusBadRequest, err.Error())
+	}
+
+	projectId, err := getID(c, projectCtx)
+	if err != nil {
+		response.NewErrorResponse(c, log, http.StatusBadRequest, err.Error())
+	}
+
+	var input models.ReprioritizeRequest
+	if err := c.BindJSON(&input); err != nil {
+		response.NewErrorResponse(c, log, http.StatusBadRequest, "invalid input body")
+	}
+
+	input.ID = id
+	input.ProjectID = projectId
+
+	output, err := h.serviceProvider.ReprioritizeGood(c, &input)
+	if err != nil {
+		response.NewErrorResponse(c, log, http.StatusInternalServerError, "internal error")
+	}
+
+	c.JSON(http.StatusOK, output)
 }
 
 func getID(c *gin.Context, param string) (int, error) {

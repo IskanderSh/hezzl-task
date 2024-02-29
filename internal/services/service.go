@@ -16,11 +16,12 @@ type GoodService struct {
 }
 
 type StorageProvider interface {
-	Create(projectID int, name string, priority int) (*models.Good, error)
+	Create(req *models.CreateRequest) (*models.Good, error)
 	GetAllGoods() (*[]models.Good, error)
 	UpdateGood(req *models.UpdateRequest) (*models.Good, error)
 	DeleteGood(req *models.DeleteRequest) (*models.DeleteResponse, error)
 	ListGoods(limit, offset int) (*[]models.Good, error)
+	ReprioritizeGoods(req *models.ReprioritizeRequest) (*[]models.Priorities, error)
 }
 
 type CacheProvider interface {
@@ -49,34 +50,36 @@ func (s *GoodService) CreateGood(ctx context.Context, req *models.CreateRequest)
 
 	log := s.log.With(slog.String("op", op))
 
-	priorityID := defaultPriority
+	priority := defaultPriority
 
 	priorityString, err := s.cacheProvider.GetMaxPriority(ctx)
 	if err != nil {
 		log.Warn("no priorityID in cache")
 	} else {
-		priorityID, err = strconv.Atoi(priorityString)
+		priority, err = strconv.Atoi(priorityString)
 		if err != nil {
 			log.Warn("couldn't convert priority id to int from string", priorityString)
 		}
 	}
 
-	if priorityID == defaultPriority {
-		priorityID, err = s.getMaxPriorityID(ctx)
+	if priority == defaultPriority {
+		priority, err = s.getMaxPriorityID(ctx)
 		if err != nil {
 			log.Warn("couldn't get maximum of priorityID from database")
 			return nil, wrapper.Wrap(op, err)
 		}
 	}
 
-	priorityID++ // new priorityID = maxPriorityID + 1
+	priority++ // new priorityID = maxPriorityID + 1
 
-	good, err := s.storageProvider.Create(req.ProjectID, req.Name, priorityID)
+	req.Priority = priority
+
+	good, err := s.storageProvider.Create(req)
 	if err != nil {
 		return nil, wrapper.Wrap(op, err)
 	}
 
-	if err := s.cacheProvider.SetMaxPriority(ctx, priorityID); err != nil {
+	if err := s.cacheProvider.SetMaxPriority(ctx, priority); err != nil {
 		return nil, wrapper.Wrap(op, err)
 	}
 
@@ -133,6 +136,19 @@ func (s *GoodService) GetGoods(ctx context.Context, limit, offset int) (*models.
 			Offset:  offset,
 		},
 		Goods: *output,
+	}, nil
+}
+
+func (s *GoodService) ReprioritizeGood(ctx context.Context, req *models.ReprioritizeRequest) (*models.ReprioritizeResponse, error) {
+	const op = "services.ReprioritizeGood"
+
+	output, err := s.storageProvider.ReprioritizeGoods(req)
+	if err != nil {
+		return nil, wrapper.Wrap(op, err)
+	}
+
+	return &models.ReprioritizeResponse{
+		Priorities: *output,
 	}, nil
 }
 

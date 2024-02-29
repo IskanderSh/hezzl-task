@@ -15,6 +15,7 @@ type Good struct {
 type CreateRequest struct {
 	ProjectID int    `json:"project_id,omitempty" db:"project_id"`
 	Name      string `json:"name" db:"name"`
+	Priority  int    `json:"priority_id,omitempty" db:"priority"`
 }
 
 type UpdateRequest struct {
@@ -45,4 +46,19 @@ type Meta struct {
 	Removed int `json:"removed"`
 	Limit   int `json:"limit"`
 	Offset  int `json:"offset"`
+}
+
+type ReprioritizeRequest struct {
+	ID          int `db:"id"`
+	ProjectID   int `db:"project_id"`
+	NewPriority int `json:"newPriority"`
+}
+
+type ReprioritizeResponse struct {
+	Priorities []Priorities `json:"priorities"`
+}
+
+type Priorities struct {
+	ID       int `json:"id" db:"id"`
+	Priority int `json:"priority" db:"priority"`
 }
