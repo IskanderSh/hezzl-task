@@ -19,6 +19,7 @@ type StorageProvider interface {
 	Create(projectID int, name string, priority int) (*models.Goods, error)
 	GetAllGoods() (*[]models.Goods, error)
 	UpdateGood(req *models.UpdateRequest) (*models.Goods, error)
+	DeleteGood(req *models.DeleteRequest) (*models.DeleteResponse, error)
 }
 
 type CacheProvider interface {
@@ -92,6 +93,17 @@ func (s *GoodService) UpdateGood(ctx context.Context, req *models.UpdateRequest)
 	}
 
 	return good, nil
+}
+
+func (s *GoodService) DeleteGood(ctx context.Context, req *models.DeleteRequest) (*models.DeleteResponse, error) {
+	const op = "services.DeleteGood"
+
+	output, err := s.storageProvider.DeleteGood(req)
+	if err != nil {
+		return nil, wrapper.Wrap(op, err)
+	}
+
+	return output, nil
 }
 
 func (s *GoodService) getMaxPriorityID(ctx context.Context) (int, error) {

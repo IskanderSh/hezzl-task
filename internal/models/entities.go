@@ -23,3 +23,14 @@ type UpdateRequest struct {
 	Name        string `json:"name" db:"name"`
 	Description string `json:"description" db:"description"`
 }
+
+type DeleteRequest struct {
+	ID        int `json:"id" db:"id"`
+	ProjectID int `json:"project_id" db:"project_id"`
+}
+
+type DeleteResponse struct {
+	ID        int  `json:"id" db:"id"`
+	ProjectID int  `json:"project_id" db:"project_id"`
+	Removed   bool `json:"removed" db:"removed"`
+}

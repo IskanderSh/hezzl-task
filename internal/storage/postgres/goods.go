@@ -65,3 +65,15 @@ func (s *Storage) UpdateGood(req *models.UpdateRequest) (*models.Goods, error) {
 
 	return &value, nil
 }
+
+func (s *Storage) DeleteGood(req *models.DeleteRequest) (*models.DeleteResponse, error) {
+	const op = "storage.goods.DeleteGood"
+
+	value := models.DeleteResponse{}
+	row := s.db.QueryRow(deleteGood, req.ID, req.ProjectID)
+	if err := row.Scan(&value); err != nil {
+		return nil, wrapper.Wrap(op, err)
+	}
+
+	return &value, nil
+}

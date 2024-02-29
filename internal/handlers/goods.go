@@ -20,6 +20,7 @@ type GoodHandler struct {
 type ServiceProvider interface {
 	CreateGood(ctx context.Context, req *models.CreateRequest) (*models.Goods, error)
 	UpdateGood(ctx context.Context, req *models.UpdateRequest) (*models.Goods, error)
+	DeleteGood(ctx context.Context, req *models.DeleteRequest) (*models.DeleteResponse, error)
 }
 
 func NewGoodHandler(log *slog.Logger, provider ServiceProvider) *GoodHandler {
@@ -109,7 +110,34 @@ func (h *GoodHandler) UpdateGood(c *gin.Context) {
 }
 
 func (h *GoodHandler) DeleteGood(c *gin.Context) {
+	const op = "handlers.DeleteGood"
 
+	log := h.log.With(slog.String("op", op))
+
+	id, err := getID(c, idCtx)
+	if err != nil {
+		response.NewErrorResponse(c, log, http.StatusBadRequest, err.Error())
+	}
+
+	projectId, err := getID(c, projectCtx)
+	if err != nil {
+		response.NewErrorResponse(c, log, http.StatusBadRequest, err.Error())
+	}
+
+	var input models.DeleteRequest
+	if err := c.BindJSON(&input); err != nil {
+		response.NewErrorResponse(c, log, http.StatusBadRequest, "invalid input body")
+	}
+
+	input.ID = id
+	input.ProjectID = projectId
+
+	output, err := h.serviceProvider.DeleteGood(c, &input)
+	if err != nil {
+		response.NewErrorResponse(c, log, http.StatusInternalServerError, "internal error")
+	}
+
+	c.JSON(http.StatusOK, output)
 }
 
 func (h *GoodHandler) ListGoods(c *gin.Context) {
