@@ -10,7 +10,11 @@ import (
 )
 
 const (
-	removedBase = false
+	defaultRemoved = false
+)
+
+var (
+	ErrGoodNotFound = errors.New("good with such id in project not found")
 )
 
 func (s *Storage) Create(req *models.CreateRequest) (*models.Good, error) {
@@ -18,7 +22,7 @@ func (s *Storage) Create(req *models.CreateRequest) (*models.Good, error) {
 
 	var good models.Good
 
-	row := s.db.QueryRow(createGoodQuery, req.ProjectID, req.Name, req.Priority, removedBase)
+	row := s.db.QueryRow(createGoodQuery, req.ProjectID, req.Name, req.Priority, defaultRemoved)
 
 	if err := row.Scan(&good); err != nil {
 		return nil, wrapper.Wrap(op, err)
@@ -57,7 +61,7 @@ func (s *Storage) UpdateGood(req *models.UpdateRequest) (*models.Good, error) {
 	value := models.Good{}
 	row := s.db.QueryRow(getGood, req.ID, req.ProjectID)
 	if err := row.Scan(&value); err != nil {
-		return nil, wrapper.Wrap(op, errors.New("no good with this params"))
+		return nil, wrapper.Wrap(op, ErrGoodNotFound)
 	}
 
 	row = s.db.QueryRow(updateGood, req.Name, req.Description, req.ID, req.ProjectID)
@@ -72,7 +76,12 @@ func (s *Storage) DeleteGood(req *models.DeleteRequest) (*models.DeleteResponse,
 	const op = "storage.goods.DeleteGood"
 
 	value := models.DeleteResponse{}
-	row := s.db.QueryRow(deleteGood, req.ID, req.ProjectID)
+	row := s.db.QueryRow(getGood, req.ID, req.ProjectID)
+	if err := row.Scan(&value); err != nil {
+		return nil, wrapper.Wrap(op, ErrGoodNotFound)
+	}
+
+	row = s.db.QueryRow(deleteGood, req.ID, req.ProjectID)
 	if err := row.Scan(&value); err != nil {
 		return nil, wrapper.Wrap(op, err)
 	}

@@ -9,6 +9,7 @@ import (
 
 	"github.com/IskanderSh/hezzl-task/internal/lib/error/response"
 	"github.com/IskanderSh/hezzl-task/internal/models"
+	"github.com/IskanderSh/hezzl-task/internal/services"
 	"github.com/gin-gonic/gin"
 )
 
@@ -53,6 +54,8 @@ const (
 	idCtx      = "id"
 	limitCtx   = "limit"
 	offsetCtx  = "offset"
+
+	goodNotFoundMessage = "errors.good.NotFound"
 )
 
 func (h *GoodHandler) CreateGood(c *gin.Context) {
@@ -110,6 +113,9 @@ func (h *GoodHandler) UpdateGood(c *gin.Context) {
 
 	output, err := h.serviceProvider.UpdateGood(c, &input)
 	if err != nil {
+		if errors.Is(err, services.ErrGoodNotFound) {
+			response.NewErrorResponse(c, log, http.StatusNotFound, goodNotFoundMessage)
+		}
 		response.NewErrorResponse(c, log, http.StatusInternalServerError, "internal error")
 	}
 

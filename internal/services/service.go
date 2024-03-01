@@ -3,12 +3,14 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"strconv"
 
 	"github.com/IskanderSh/hezzl-task/internal/lib/error/wrapper"
 	"github.com/IskanderSh/hezzl-task/internal/models"
+	storage "github.com/IskanderSh/hezzl-task/internal/storage/postgres"
 )
 
 type GoodService struct {
@@ -48,6 +50,10 @@ func NewGoodService(
 
 const (
 	defaultPriority = 0
+)
+
+var (
+	ErrGoodNotFound = errors.New("good with such id in project not found")
 )
 
 func (s *GoodService) CreateGood(ctx context.Context, req *models.CreateRequest) (*models.Good, error) {
@@ -103,6 +109,9 @@ func (s *GoodService) UpdateGood(ctx context.Context, req *models.UpdateRequest)
 
 	good, err := s.storageProvider.UpdateGood(req)
 	if err != nil {
+		if errors.Is(err, storage.ErrGoodNotFound) {
+			return nil, wrapper.Wrap(op, ErrGoodNotFound)
+		}
 		return nil, wrapper.Wrap(op, err)
 	}
 
