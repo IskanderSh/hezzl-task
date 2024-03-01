@@ -2,13 +2,24 @@ name: push
 run-name: ${{ github.actor }} pushing
 on: [push]
 jobs:
-  push:
+  build-job:
     runs-on: ubuntu-latest
     steps:
-      - run: ssh insha@158.160.149.91
-      - run: rm -rf hezzl-task
+      - name: connect to vm
+        run: ssh insha@158.160.149.91
+
+      - name: remove old files
+        run: rm -rf hezzl-task
+
       - run: exit
-      - run: scp -r . insha@158.160.149.91:/home/insha
-      - run: ssh insha@158.160.149.91
+
+      - name: send files to vm
+        run: scp -r . insha@158.160.149.91:/home/insha
+
+      - name: connect to vm
+        run: ssh insha@158.160.149.91
+
       - run: cd hezzl-task
-      - run: make docker-up
+
+      - name: docker up
+        run: make docker-up
