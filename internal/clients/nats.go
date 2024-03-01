@@ -14,6 +14,7 @@ import (
 type NatsClient struct {
 	log        *slog.Logger
 	connection *nats.Conn
+	subject    string
 	provider   LogsProvider
 }
 
@@ -22,20 +23,22 @@ type LogsProvider interface {
 }
 
 func NewNatsClient(log *slog.Logger, cfg config.MessageBroker, provider LogsProvider) (*NatsClient, error) {
+	const op = "clients.nats.NewNatsClient"
+
 	connectString := fmt.Sprintf("nats://%s:%d", cfg.Host, cfg.Port)
 
 	nc, err := nats.Connect(connectString)
 	if err != nil {
-		return nil, err
+		return nil, wrapper.Wrap(op, err)
 	}
 
-	return &NatsClient{log: log, connection: nc, provider: provider}, nil
+	return &NatsClient{log: log, connection: nc, subject: cfg.Subject, provider: provider}, nil
 }
 
-func (nc *NatsClient) SubscribeSubjects(subject string) error {
+func (nc *NatsClient) SubscribeSubjects() error {
 	const op = "clients.nats.SubscribeSubjects"
 
-	_, err := nc.connection.Subscribe(subject, nc.ReceiveLog)
+	_, err := nc.connection.Subscribe(nc.subject, nc.ReceiveLog)
 	if err != nil {
 		return wrapper.Wrap(op, err)
 	}

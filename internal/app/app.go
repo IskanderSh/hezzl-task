@@ -33,10 +33,25 @@ func NewServer(log *slog.Logger, cfg *config.Config) *Server {
 	}
 
 	// Clients
-	broker, err := clients.NewNatsClient(log, cfg.MessageBroker, logStorage)
+	brokerClient, err := clients.NewNatsClient(log, cfg.MessageBroker, logStorage)
+	if err != nil {
+		panic(err)
+	}
+
+	// Subscribe to subject
+	go func() {
+		if err := brokerClient.SubscribeSubjects(); err != nil {
+			log.Error(err.Error())
+		}
+	}()
 
 	// Services
-	goodService := services.NewGoodService(log, storage, cache, broker)
+	brokerServer, err := services.NewNatsServer(log, cfg.MessageBroker)
+	if err != nil {
+		panic(err)
+	}
+
+	goodService := services.NewGoodService(log, storage, cache, brokerServer)
 
 	// Handlers
 	handler := handlers.NewGoodHandler(log, goodService)

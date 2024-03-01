@@ -38,6 +38,7 @@ type CacheProvider interface {
 }
 
 type BrokerProvider interface {
+	SendLog(log *models.GoodLog)
 }
 
 func NewGoodService(

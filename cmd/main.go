@@ -31,9 +31,11 @@ func main() {
 	application := app.NewServer(log, cfg)
 
 	// start app
-	if err := application.HTTPServer.ListenAndServe(); err != nil {
-		panic(err)
-	}
+	go func() {
+		if err := application.HTTPServer.ListenAndServe(); err != nil {
+			panic(err)
+		}
+	}()
 	log.Info("application started successfully")
 
 	// graceful shutdown
