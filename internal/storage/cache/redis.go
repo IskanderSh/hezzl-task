@@ -56,6 +56,10 @@ func (c *Cache) SaveGood(ctx context.Context, key string, value *models.GoodCach
 		return wrapper.Wrap(op, err)
 	}
 
+	if _, err := c.client.Expire(ctx, key, minuteExpiration).Result(); err != nil {
+		return wrapper.Wrap(op, err)
+	}
+
 	return nil
 }
 

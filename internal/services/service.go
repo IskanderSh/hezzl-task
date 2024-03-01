@@ -149,19 +149,7 @@ func (s *GoodService) GetGoods(ctx context.Context, limit, offset int) (*models.
 	for _, good := range *goodsNotInCache {
 		output = append(output, good)
 
-		key := fmt.Sprintf("%d", good.ID)
-		value := &models.GoodCache{
-			ProjectID:   good.ProjectID,
-			Name:        good.Name,
-			Description: good.Description,
-			Priority:    good.Priority,
-			Removed:     good.Removed,
-			CreatedAt:   good.CreatedAt,
-		}
-
-		if err := s.cacheProvider.SaveGood(ctx, key, value); err != nil {
-			log.Warn("couldn't save good to cache", key)
-		}
+		s.saveCache(ctx, good)
 	}
 
 	total := 0
@@ -217,4 +205,24 @@ func (s *GoodService) getMaxPriorityID(ctx context.Context) (int, error) {
 	}
 
 	return maxPriority, nil
+}
+
+func (s *GoodService) saveCache(ctx context.Context, good models.Good) {
+	const op = "services.saveCache"
+
+	log := s.log.With(slog.String("op", op))
+
+	key := fmt.Sprintf("%d", good.ID)
+	value := &models.GoodCache{
+		ProjectID:   good.ProjectID,
+		Name:        good.Name,
+		Description: good.Description,
+		Priority:    good.Priority,
+		Removed:     good.Removed,
+		CreatedAt:   good.CreatedAt,
+	}
+
+	if err := s.cacheProvider.SaveGood(ctx, key, value); err != nil {
+		log.Warn("couldn't save good to cache", key)
+	}
 }
