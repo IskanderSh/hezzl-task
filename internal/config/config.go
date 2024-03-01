@@ -15,6 +15,7 @@ type Config struct {
 	Storage       Storage       `yaml:"storage"`
 	Cache         Cache         `yaml:"cache"`
 	MessageBroker MessageBroker `yaml:"broker"`
+	LogStorage    LogStorage    `yaml:"log_storage"`
 }
 
 type Application struct {
@@ -35,12 +36,15 @@ type Cache struct {
 }
 
 type MessageBroker struct {
-	Port int `yaml:"port"`
+	Port    int    `yaml:"port"`
+	Host    string `yaml:"host"`
+	Subject string `yaml:"subject"'`
 }
 
-//type LogStorage struct {
-//	Port int `yaml:"port"`
-//}
+type LogStorage struct {
+	Port int    `yaml:"port"`
+	Host string `yaml:"host"`
+}
 
 func MustLoad() *Config {
 	path := fetchConfigPath()

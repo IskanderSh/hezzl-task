@@ -17,6 +17,7 @@ type GoodService struct {
 	log             *slog.Logger
 	storageProvider StorageProvider
 	cacheProvider   CacheProvider
+	brokerProvider  BrokerProvider
 }
 
 type StorageProvider interface {
@@ -36,15 +37,20 @@ type CacheProvider interface {
 	DeleteGood(ctx context.Context, key string) error
 }
 
+type BrokerProvider interface {
+}
+
 func NewGoodService(
 	log *slog.Logger,
 	provider StorageProvider,
 	cache CacheProvider,
+	broker BrokerProvider,
 ) *GoodService {
 	return &GoodService{
 		log:             log,
 		storageProvider: provider,
 		cacheProvider:   cache,
+		brokerProvider:  broker,
 	}
 }
 
