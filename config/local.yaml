@@ -12,7 +12,7 @@ cache:
   port: 6379
   ttl: 1m
 broker:
-  port: 4222
+  port: 8222
   host: localhost
   subject: logs
 log_storage:
