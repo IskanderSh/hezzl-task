@@ -14,6 +14,6 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           port: 22
           script: |
-            cd ~/home/insha
+#            cd ~/home/insha
             git pull origin master
             make docker-up
