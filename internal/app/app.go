@@ -27,13 +27,13 @@ func NewServer(log *slog.Logger, cfg *config.Config) *Server {
 
 	cache := redis.NewCache(cfg.Cache)
 
-	log_storage, err := clickhouse.NewLogStorage(log, cfg.LogStorage)
+	logStorage, err := clickhouse.NewLogStorage(log, cfg.LogStorage)
 	if err != nil {
 		panic(err)
 	}
 
 	// Clients
-	broker, err := clients.NewNatsClient(log, cfg.MessageBroker, log_storage)
+	broker, err := clients.NewNatsClient(log, cfg.MessageBroker, logStorage)
 
 	// Services
 	goodService := services.NewGoodService(log, storage, cache, broker)
