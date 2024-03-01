@@ -85,7 +85,12 @@ func (s *GoodService) CreateGood(ctx context.Context, req *models.CreateRequest)
 	}
 
 	if err := s.cacheProvider.SetMaxPriority(ctx, priority); err != nil {
-		return nil, wrapper.Wrap(op, err)
+		log.Warn("couldn't save maximum of priority to cache", priority)
+	}
+
+	key, value := makeCacheParams(good)
+	if err := s.cacheProvider.SaveGood(ctx, key, value); err != nil {
+		log.Warn("couldn't save good to cache", key)
 	}
 
 	return good, nil
