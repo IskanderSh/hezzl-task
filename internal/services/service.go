@@ -130,6 +130,9 @@ func (s *GoodService) DeleteGood(ctx context.Context, req *models.DeleteRequest)
 
 	output, err := s.storageProvider.DeleteGood(req)
 	if err != nil {
+		if errors.Is(err, storage.ErrGoodNotFound) {
+			return nil, wrapper.Wrap(op, ErrGoodNotFound)
+		}
 		return nil, wrapper.Wrap(op, err)
 	}
 

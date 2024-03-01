@@ -147,6 +147,9 @@ func (h *GoodHandler) DeleteGood(c *gin.Context) {
 
 	output, err := h.serviceProvider.DeleteGood(c, &input)
 	if err != nil {
+		if errors.Is(err, services.ErrGoodNotFound) {
+			response.NewErrorResponse(c, log, http.StatusNotFound, goodNotFoundMessage)
+		}
 		response.NewErrorResponse(c, log, http.StatusInternalServerError, "internal error")
 	}
 
