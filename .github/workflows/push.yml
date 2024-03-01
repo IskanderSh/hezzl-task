@@ -17,4 +17,3 @@ jobs:
             cd ~/home/insha
             git pull origin master
             make docker-up
-
