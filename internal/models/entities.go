@@ -62,3 +62,12 @@ type Priorities struct {
 	ID       int `json:"id" db:"id"`
 	Priority int `json:"priority" db:"priority"`
 }
+
+type GoodCache struct {
+	ProjectID   int
+	Name        string
+	Description string
+	Priority    int
+	Removed     bool
+	CreatedAt   time.Duration
+}

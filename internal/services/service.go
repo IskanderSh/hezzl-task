@@ -2,6 +2,8 @@ package services
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"log/slog"
 	"strconv"
 
@@ -20,13 +22,15 @@ type StorageProvider interface {
 	GetAllGoods() (*[]models.Good, error)
 	UpdateGood(req *models.UpdateRequest) (*models.Good, error)
 	DeleteGood(req *models.DeleteRequest) (*models.DeleteResponse, error)
-	ListGoods(limit, offset int) (*[]models.Good, error)
+	ListGoods(ids *[]int) (*[]models.Good, error)
 	ReprioritizeGoods(req *models.ReprioritizeRequest) (*[]models.Priorities, error)
 }
 
 type CacheProvider interface {
 	GetMaxPriority(ctx context.Context) (string, error)
 	SetMaxPriority(ctx context.Context, priority int) error
+	SaveGood(ctx context.Context, key string, value *models.GoodCache) error
+	GetGood(ctx context.Context, key string) (string, error)
 }
 
 func NewGoodService(
@@ -113,15 +117,56 @@ func (s *GoodService) DeleteGood(ctx context.Context, req *models.DeleteRequest)
 func (s *GoodService) GetGoods(ctx context.Context, limit, offset int) (*models.ListGoodsResponse, error) {
 	const op = "services.GetGoods"
 
-	output, err := s.storageProvider.ListGoods(limit, offset)
+	log := s.log.With(slog.String("op", op))
+
+	idsNotInCache := make([]int, 0, limit)
+	output := make([]models.Good, 0, limit)
+
+	for id := offset; id <= offset+limit; id++ {
+		key := fmt.Sprintf("%d", id)
+		value, err := s.cacheProvider.GetGood(ctx, key)
+		if err != nil {
+			log.Info("there is no value in cache with key", key)
+			idsNotInCache = append(idsNotInCache, id)
+		} else {
+			good := models.Good{}
+
+			if err := json.Unmarshal([]byte(value), &good); err != nil {
+				log.Warn("couldn't unmarshal")
+				idsNotInCache = append(idsNotInCache, id)
+				continue
+			}
+
+			output = append(output, good)
+		}
+	}
+
+	goodsNotInCache, err := s.storageProvider.ListGoods(&idsNotInCache)
 	if err != nil {
 		return nil, wrapper.Wrap(op, err)
 	}
 
+	for _, good := range *goodsNotInCache {
+		output = append(output, good)
+
+		key := fmt.Sprintf("%d", good.ID)
+		value := &models.GoodCache{
+			ProjectID:   good.ProjectID,
+			Name:        good.Name,
+			Description: good.Description,
+			Priority:    good.Priority,
+			Removed:     good.Removed,
+			CreatedAt:   good.CreatedAt,
+		}
+
+		if err := s.cacheProvider.SaveGood(ctx, key, value); err != nil {
+			log.Warn("couldn't save good to cache", key)
+		}
+	}
+
 	total := 0
 	removed := 0
-	for i := 0; i < len(*output); i++ {
-		value := (*output)[i]
+	for _, value := range output {
 		if value.Removed {
 			removed++
 		}
@@ -135,7 +180,7 @@ func (s *GoodService) GetGoods(ctx context.Context, limit, offset int) (*models.
 			Limit:   limit,
 			Offset:  offset,
 		},
-		Goods: *output,
+		Goods: output,
 	}, nil
 }
 
@@ -163,8 +208,8 @@ func (s *GoodService) getMaxPriorityID(ctx context.Context) (int, error) {
 	}
 
 	maxPriority := defaultPriority
-	for i := 0; i < len(*values); i++ {
-		priority := (*values)[i].Priority
+	for _, value := range *values {
+		priority := value.Priority
 
 		if priority > maxPriority {
 			maxPriority = priority

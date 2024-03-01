@@ -14,4 +14,6 @@ const deleteGood = `DELETE FROM goods WHERE id=$1 AND project_id=$2 RETURNING id
 
 const listGoods = `SELECT * FROM goods ORDER BY id LIMIT $1 OFFSET $2`
 
+const listGoodsWithIds = `SELECT * FROM goods WHERE id IN (%s)`
+
 const reprioritizeGood = `UPDATE goods SET priority = priority+1 WHERE priority >= $1 RETURNING id, priority`

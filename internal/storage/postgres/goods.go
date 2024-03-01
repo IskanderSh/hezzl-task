@@ -2,6 +2,8 @@ package postgres
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/IskanderSh/hezzl-task/internal/lib/error/wrapper"
 	"github.com/IskanderSh/hezzl-task/internal/models"
@@ -78,10 +80,21 @@ func (s *Storage) DeleteGood(req *models.DeleteRequest) (*models.DeleteResponse,
 	return &value, nil
 }
 
-func (s *Storage) ListGoods(limit, offset int) (*[]models.Good, error) {
+func (s *Storage) ListGoods(ids *[]int) (*[]models.Good, error) {
 	const op = "storage.goods.ListGoods"
 
-	rows, err := s.db.Query(listGoods, limit, offset)
+	idsConstraint := strings.Builder{}
+
+	for i, idx := range *ids {
+		if i != 0 {
+			idsConstraint.WriteString(", ")
+		}
+		idsConstraint.WriteString(fmt.Sprintf("%d", idx))
+	}
+
+	query := fmt.Sprintf(listGoodsWithIds, idsConstraint.String())
+
+	rows, err := s.db.Query(query)
 	if err != nil {
 		return nil, wrapper.Wrap(op, err)
 	}

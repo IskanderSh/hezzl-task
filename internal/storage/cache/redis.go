@@ -6,12 +6,14 @@ import (
 
 	"github.com/IskanderSh/hezzl-task/internal/config"
 	"github.com/IskanderSh/hezzl-task/internal/lib/error/wrapper"
+	"github.com/IskanderSh/hezzl-task/internal/models"
 	"github.com/redis/go-redis/v9"
 )
 
 const (
-	priorityKey    = "priority"
-	zeroExpiration = 0
+	priorityKey      = "priority"
+	zeroExpiration   = 0
+	minuteExpiration = 60
 )
 
 type Cache struct {
@@ -45,4 +47,25 @@ func (c *Cache) SetMaxPriority(ctx context.Context, priority int) error {
 	}
 
 	return nil
+}
+
+func (c *Cache) SaveGood(ctx context.Context, key string, value *models.GoodCache) error {
+	const op = "storage.cache.SaveGoods"
+
+	if err := c.client.Set(ctx, key, value, minuteExpiration).Err(); err != nil {
+		return wrapper.Wrap(op, err)
+	}
+
+	return nil
+}
+
+func (c *Cache) GetGood(ctx context.Context, key string) (string, error) {
+	const op = "storage.cache.GetGood"
+
+	value, err := c.client.Get(ctx, key).Result()
+	if err != nil {
+		return "", wrapper.Wrap(op, err)
+	}
+
+	return value, nil
 }
