@@ -1,25 +1,19 @@
 name: push
 run-name: ${{ github.actor }} pushing
 on: [push]
+
 jobs:
   build-job:
     runs-on: ubuntu-latest
     steps:
-      - name: connect to vm
-        run: ssh insha@158.160.149.91
-
-      - name: remove old files
-        run: rm -rf hezzl-task
-
-      - run: exit
-
-      - name: send files to vm
-        run: scp -r . insha@158.160.149.91:/home/insha
-
-      - name: connect to vm
-        run: ssh insha@158.160.149.91
-
-      - run: cd hezzl-task
-
-      - name: docker up
-        run: make docker-up
+      - name: Deploy using ssh
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd ~/home/insha
+            git pull origin master
+            make docker-up
