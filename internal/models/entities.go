@@ -71,3 +71,13 @@ type GoodCache struct {
 	Removed     bool
 	CreatedAt   time.Duration
 }
+
+type GoodLog struct {
+	ID          int           `db:"Id"`
+	ProjectID   int           `db:"ProjectId"`
+	Name        string        `db:"Name"`
+	Description string        `db:"Description"`
+	Priority    int           `db:"Priority"`
+	Removed     bool          `db:"Removed"`
+	EventTime   time.Duration `db:"EventTime"`
+}

@@ -1,11 +1,13 @@
 package clients
 
 import (
+	"encoding/json"
 	"fmt"
 	"log/slog"
 
 	"github.com/IskanderSh/hezzl-task/internal/config"
 	"github.com/IskanderSh/hezzl-task/internal/lib/error/wrapper"
+	"github.com/IskanderSh/hezzl-task/internal/models"
 	"github.com/nats-io/nats.go"
 )
 
@@ -16,6 +18,7 @@ type NatsClient struct {
 }
 
 type LogsProvider interface {
+	NewLogs(logs *[]models.GoodLog) error
 }
 
 func NewNatsClient(log *slog.Logger, cfg config.MessageBroker, provider LogsProvider) (*NatsClient, error) {
@@ -46,4 +49,14 @@ func (nc *NatsClient) ReceiveLog(m *nats.Msg) {
 	log := nc.log.With(slog.String("op", op))
 
 	log.Debug(fmt.Sprintf("log's subject received a message: %s", string(m.Data)))
+
+	var logs []models.GoodLog
+
+	if err := json.Unmarshal(m.Data, &logs); err != nil {
+		log.Error("couldn't convert data to logs struct")
+	}
+
+	if err := nc.provider.NewLogs(&logs); err != nil {
+		log.Error("couldn't save logs in logs storage", err)
+	}
 }

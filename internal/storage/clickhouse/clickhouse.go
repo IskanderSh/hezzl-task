@@ -8,6 +8,7 @@ import (
 
 	"github.com/IskanderSh/hezzl-task/internal/config"
 	"github.com/IskanderSh/hezzl-task/internal/lib/error/wrapper"
+	"github.com/IskanderSh/hezzl-task/internal/models"
 )
 
 type LogStorage struct {
@@ -33,4 +34,42 @@ func NewLogStorage(log *slog.Logger, cfg config.LogStorage) (*LogStorage, error)
 		log:        log,
 		connection: conn,
 	}, nil
+}
+
+func (s *LogStorage) NewLogs(logs *[]models.GoodLog) error {
+	const op = "storage.clickhouse.NewLogs"
+
+	log := s.log.With(slog.String("op", op))
+
+	scope, err := s.connection.Begin()
+	if err != nil {
+		return wrapper.Wrap(op, err)
+	}
+
+	batch, err := scope.Prepare(insertQuery)
+	if err != nil {
+		return wrapper.Wrap(op, err)
+	}
+
+	for _, value := range *logs {
+		_, err := batch.Exec(
+			value.ID,
+			value.ProjectID,
+			value.Name,
+			value.Description,
+			value.Priority,
+			value.Removed,
+			value.EventTime,
+		)
+		if err != nil {
+			log.Warn("error when inserting log to clickhouse", value.ID)
+		}
+	}
+
+	err = scope.Commit()
+	if err != nil {
+		return wrapper.Wrap(op, err)
+	}
+
+	return nil
 }
