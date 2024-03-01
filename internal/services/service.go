@@ -31,6 +31,7 @@ type CacheProvider interface {
 	SetMaxPriority(ctx context.Context, priority int) error
 	SaveGood(ctx context.Context, key string, value *models.GoodCache) error
 	GetGood(ctx context.Context, key string) (string, error)
+	DeleteGood(ctx context.Context, key string) error
 }
 
 func NewGoodService(
@@ -93,11 +94,16 @@ func (s *GoodService) CreateGood(ctx context.Context, req *models.CreateRequest)
 func (s *GoodService) UpdateGood(ctx context.Context, req *models.UpdateRequest) (*models.Good, error) {
 	const op = "services.UpdateGood"
 
-	//log := s.log.With(slog.String("op", op))
+	log := s.log.With(slog.String("op", op))
 
 	good, err := s.storageProvider.UpdateGood(req)
 	if err != nil {
 		return nil, wrapper.Wrap(op, err)
+	}
+
+	key, value := makeCacheParams(good)
+	if err := s.cacheProvider.SaveGood(ctx, key, value); err != nil {
+		log.Warn(fmt.Sprintf("couldn't save good to cache %s", key))
 	}
 
 	return good, nil
@@ -106,9 +112,16 @@ func (s *GoodService) UpdateGood(ctx context.Context, req *models.UpdateRequest)
 func (s *GoodService) DeleteGood(ctx context.Context, req *models.DeleteRequest) (*models.DeleteResponse, error) {
 	const op = "services.DeleteGood"
 
+	log := s.log.With(slog.String("op", op))
+
 	output, err := s.storageProvider.DeleteGood(req)
 	if err != nil {
 		return nil, wrapper.Wrap(op, err)
+	}
+
+	key := fmt.Sprintf("%d", output.ID)
+	if err := s.cacheProvider.DeleteGood(ctx, key); err != nil {
+		log.Warn(fmt.Sprintf("couldn't delete good in cache with key: %s", key))
 	}
 
 	return output, nil
@@ -149,7 +162,11 @@ func (s *GoodService) GetGoods(ctx context.Context, limit, offset int) (*models.
 	for _, good := range *goodsNotInCache {
 		output = append(output, good)
 
-		s.saveCache(ctx, good)
+		key, value := makeCacheParams(&good)
+
+		if err := s.cacheProvider.SaveGood(ctx, key, value); err != nil {
+			log.Warn(fmt.Sprintf("couldn't save good to cache %s", key))
+		}
 	}
 
 	total := 0
@@ -207,11 +224,7 @@ func (s *GoodService) getMaxPriorityID(ctx context.Context) (int, error) {
 	return maxPriority, nil
 }
 
-func (s *GoodService) saveCache(ctx context.Context, good models.Good) {
-	const op = "services.saveCache"
-
-	log := s.log.With(slog.String("op", op))
-
+func makeCacheParams(good *models.Good) (string, *models.GoodCache) {
 	key := fmt.Sprintf("%d", good.ID)
 	value := &models.GoodCache{
 		ProjectID:   good.ProjectID,
@@ -222,7 +235,5 @@ func (s *GoodService) saveCache(ctx context.Context, good models.Good) {
 		CreatedAt:   good.CreatedAt,
 	}
 
-	if err := s.cacheProvider.SaveGood(ctx, key, value); err != nil {
-		log.Warn("couldn't save good to cache", key)
-	}
+	return key, value
 }

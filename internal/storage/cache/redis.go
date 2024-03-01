@@ -73,3 +73,14 @@ func (c *Cache) GetGood(ctx context.Context, key string) (string, error) {
 
 	return value, nil
 }
+
+func (c *Cache) DeleteGood(ctx context.Context, key string) error {
+	const op = "storage.cache.DeleteGood"
+
+	_, err := c.client.Del(ctx, key).Result()
+	if err != nil {
+		return wrapper.Wrap(op, err)
+	}
+
+	return nil
+}
