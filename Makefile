@@ -17,7 +17,7 @@ app-up:
 	-d application
 
 docker-up-local:
-	docker-compose -f ./deploy/local/docker-compose.yml up -d
+	docker-compose -f ./docker-compose-local.yml up -d
 
 docker-up-prod:
 	docker-compose -f ./deploy/prod/docker-compose.yml up -d
