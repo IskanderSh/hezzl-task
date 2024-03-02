@@ -20,4 +20,4 @@ docker-up-local:
 	docker-compose -f ./docker-compose-local.yml up -d
 
 docker-up-prod:
-	docker-compose -f ./deploy/prod/docker-compose.yml up -d
+	docker-compose -f ./docker-compose-prod.yml up -d
