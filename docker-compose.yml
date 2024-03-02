@@ -38,6 +38,6 @@ services:
       - nats
       - clickhouse
     environment:
-      CONFIG_PATH: ./config/local.yaml
+      CONFIG_PATH: ./local.yaml
     ports:
       - "1111:1111"

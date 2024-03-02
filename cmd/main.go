@@ -21,7 +21,6 @@ const (
 
 func main() {
 	// load config file
-	print("in main")
 	cfg := config.MustLoad()
 
 	// init logger

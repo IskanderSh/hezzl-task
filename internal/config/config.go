@@ -2,7 +2,6 @@ package config
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"time"
 
@@ -53,7 +52,6 @@ func MustLoad() *Config {
 		panic("config path is empty")
 	}
 
-	fmt.Println(path)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		panic("file is not exists")
 	}
@@ -73,10 +71,8 @@ func fetchConfigPath() string {
 
 	flag.StringVar(&res, "config", "", "path to config file")
 	flag.Parse()
-	fmt.Sprintf("parsed string %s\n", res)
 
 	if res == "" {
-		fmt.Println("getting config from os")
 		res = os.Getenv("CONFIG_PATH")
 	}
 
