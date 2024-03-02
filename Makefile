@@ -11,7 +11,7 @@ migrations-up:
 
 app-up:
 	docker build -t application .
-	docker run \
+	docker run --rm \
 	--name application \
 	-p 1111:1111 \
 	-d application
