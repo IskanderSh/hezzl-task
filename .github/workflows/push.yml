@@ -16,5 +16,4 @@ jobs:
           script: |
             cd hezzl-task
             git pull origin master
-            mkdir backend
             make docker-up
