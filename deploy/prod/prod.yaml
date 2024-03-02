@@ -1,0 +1,20 @@
+env: "prod"
+log_level: "debug"
+application:
+  port: 1111
+storage:
+  host: 51.250.9.177
+  port: 5432
+  user: postgres
+  password: password
+cache:
+  host: 51.250.9.177
+  port: 6379
+  ttl: 1m
+broker:
+  port: 8222
+  host: 51.250.9.177
+  subject: logs
+log_storage:
+  port: 9000
+  host: 51.250.9.177

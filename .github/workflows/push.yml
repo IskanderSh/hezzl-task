@@ -19,4 +19,4 @@ jobs:
             cd hezzl-task
             git reset --hard
             git pull origin master
-            make docker-up
+            make docker-up-prod

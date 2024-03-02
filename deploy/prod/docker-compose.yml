@@ -1,0 +1,43 @@
+version: "3"
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: "password"
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_PORT=6379
+
+  nats:
+    image: nats
+    ports:
+      - "8222:8222"
+
+  clickhouse:
+    image: yandex/clickhouse-server
+    container_name: clickhouse
+    ports:
+      - "9000:9000"
+
+  application:
+    build:
+      context: ../..
+      dockerfile: ../../Dockerfile
+    container_name: application
+    image: application
+    depends_on:
+      - postgres
+      - redis
+      - nats
+      - clickhouse
+    environment:
+      CONFIG_PATH: ./prod.yaml
+    ports:
+      - "1111:1111"

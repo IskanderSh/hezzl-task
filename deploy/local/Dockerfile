@@ -2,16 +2,16 @@ FROM golang:alpine AS builder
 
 WORKDIR /usr/local/src
 
-ADD go.mod .
+ADD ../../go.mod .
 
-COPY . .
+COPY ../.. .
 
 RUN go build -o ./bin/application cmd/main.go
 
 FROM alpine AS runner
 
 COPY --from=builder /usr/local/src/bin/application .
-COPY config/local.yaml .
+COPY local.yaml .
 
 ENV CONFIG_PATH=./local.yaml
 

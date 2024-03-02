@@ -1,7 +1,7 @@
 HOST = localhost
 
 run:
-	go run cmd/main.go --config=./config/local.yaml
+	go run cmd/main.go --config=.github/local/local.yaml
 
 tidy:
 	go mod tidy
@@ -16,5 +16,8 @@ app-up:
 	-p 1111:1111 \
 	-d application
 
-docker-up:
-	docker-compose up -d
+docker-up-local:
+	docker-compose -f ./deploy/local/docker-compose.yml up -d
+
+docker-up-prod:
+	docker-compose -f ./deploy/prod/docker-compose.yml up -d
