@@ -72,8 +72,10 @@ func fetchConfigPath() string {
 
 	flag.StringVar(&res, "config", "", "path to config file")
 	flag.Parse()
+	fmt.Sprintf("parsed string %s\n", res)
 
 	if res == "" {
+		fmt.Println("getting config from os")
 		res = os.Getenv("CONFIG_PATH")
 	}
 
