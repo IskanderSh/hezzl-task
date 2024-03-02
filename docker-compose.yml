@@ -29,7 +29,7 @@ services:
   application:
     build:
       context: backend
-      dockerfile: dockerfile
+      dockerfile: Dockerfile
     container_name: application
     image: user-service
     depends_on:
