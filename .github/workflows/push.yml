@@ -14,7 +14,7 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           port: 22
           script: |
-            docker stop application
             cd hezzl-task
             git pull origin master
+            mkdir backend
             make docker-up
