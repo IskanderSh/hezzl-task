@@ -17,5 +17,6 @@ jobs:
             docker stop application
             docker rm application
             cd hezzl-task
+            git reset --hard
             git pull origin master
             make docker-up
