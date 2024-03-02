@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"time"
 
@@ -52,6 +53,7 @@ func MustLoad() *Config {
 		panic("config path is empty")
 	}
 
+	fmt.Println(path)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		panic("file is not exists")
 	}
