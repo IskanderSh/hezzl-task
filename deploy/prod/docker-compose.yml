@@ -28,8 +28,8 @@ services:
 
   application:
     build:
-      context: ../..
-      dockerfile: ../../Dockerfile
+      context: .
+      dockerfile: Dockerfile
     container_name: application
     image: application
     depends_on:
