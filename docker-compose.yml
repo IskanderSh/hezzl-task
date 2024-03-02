@@ -31,7 +31,7 @@ services:
       context: ./
       dockerfile: Dockerfile
     container_name: application
-    image: user-service
+    image: application
     depends_on:
       - postgres
       - redis

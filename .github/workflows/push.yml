@@ -14,6 +14,8 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           port: 22
           script: |
+            docker stop application
+            docker rm application
             cd hezzl-task
             git pull origin master
             make docker-up
