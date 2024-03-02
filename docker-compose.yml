@@ -41,5 +41,3 @@ services:
       CONFIG_PATH: ./config/local.yaml
     ports:
       - "1111:1111"
-    restart:
-      always
