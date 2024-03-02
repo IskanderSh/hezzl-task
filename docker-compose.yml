@@ -28,6 +28,7 @@ services:
 
   application:
     build:
+      context: backend
       dockerfile: dockerfile
     container_name: application
     image: user-service
