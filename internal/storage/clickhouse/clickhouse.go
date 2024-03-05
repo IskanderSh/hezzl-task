@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	_ "github.com/ClickHouse/clickhouse-go"
 	"github.com/IskanderSh/hezzl-task/internal/config"
 	"github.com/IskanderSh/hezzl-task/internal/lib/error/wrapper"
 	"github.com/IskanderSh/hezzl-task/internal/models"
