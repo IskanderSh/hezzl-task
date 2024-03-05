@@ -7,40 +7,11 @@ services:
       POSTGRES_PASSWORD: "password"
     ports:
       - "5432:5432"
-    networks:
-      - bridge
-
-  redis:
-    image: redis:latest
-    container_name: redis
-    restart: always
-    ports:
-      - "6379:6379"
-    environment:
-      - REDIS_PORT=6379
-    networks:
-      - bridge
-
-  nats:
-    image: nats
-    container_name: nats
-    ports:
-      - "8222:8222"
-    networks:
-      - bridge
-
-  clickhouse:
-    image: yandex/clickhouse-server
-    container_name: clickhouse
-    ports:
-      - "9000:9000"
-    networks:
-      - bridge
 
   application:
     build:
       context: .
-      dockerfile: Dockerfile-prod
+      dockerfile: Dockerfile.prod
     container_name: application
     image: application
     depends_on:
@@ -52,5 +23,3 @@ services:
       CONFIG_PATH: ./prod.yaml
     ports:
       - "1111:1111"
-    networks:
-      - bridge
