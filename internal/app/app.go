@@ -24,19 +24,23 @@ func NewServer(log *slog.Logger, cfg *config.Config) *Server {
 	if err != nil {
 		panic(err)
 	}
+	log.Info("successfully create connection to storage")
 
 	cache := redis.NewCache(cfg.Cache)
+	log.Info("successfully create connection to cache")
 
 	logStorage, err := clickhouse.NewLogStorage(log, cfg.LogStorage)
 	if err != nil {
 		panic(err)
 	}
+	log.Info("successfully create connection to log storage")
 
 	// Clients
 	brokerClient, err := clients.NewNatsClient(log, cfg.MessageBroker, logStorage)
 	if err != nil {
 		panic(err)
 	}
+	log.Info("successfully create connection to message broker")
 
 	// Subscribe to subject
 	go func() {
