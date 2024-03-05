@@ -16,9 +16,6 @@ services:
     image: application
     depends_on:
       - postgres
-      - redis
-      - nats
-      - clickhouse
     environment:
       CONFIG_PATH: ./prod.yaml
     ports:
