@@ -33,7 +33,7 @@ services:
   application:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: prod.Dockerfile
     container_name: application
     image: application
     depends_on:
