@@ -60,7 +60,8 @@ func (nc *NatsClient) ReceiveLog(m *nats.Msg) {
 		log.Error("couldn't convert data to logs struct")
 	}
 
-	if err := nc.provider.NewLogs(&logs); err != nil {
+	ctx := context.Background()
+	if err := nc.provider.NewLogs(ctx, &logs); err != nil {
 		log.Error("couldn't save logs in logs storage", err)
 	}
 }
