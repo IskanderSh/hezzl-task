@@ -29,7 +29,7 @@ services:
   application:
     build:
       context: .
-      dockerfile: Dockerfile.local
+      dockerfile: Dockerfile-local
     container_name: application
     image: application
     depends_on:

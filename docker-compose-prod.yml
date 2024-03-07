@@ -32,7 +32,7 @@ services:
   application:
     build:
       context: .
-      dockerfile: Dockerfile.prod
+      dockerfile: Dockerfile-prod
     container_name: application
     image: application
     depends_on:

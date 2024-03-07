@@ -1,12 +1,12 @@
 package clickhouse
 
 import (
-	"database/sql"
-	"errors"
+	"context"
 	"fmt"
 	"log/slog"
 
-	_ "github.com/ClickHouse/clickhouse-go"
+	"github.com/ClickHouse/clickhouse-go/v2"
+	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
 	"github.com/IskanderSh/hezzl-task/internal/config"
 	"github.com/IskanderSh/hezzl-task/internal/lib/error/wrapper"
 	"github.com/IskanderSh/hezzl-task/internal/models"
@@ -14,21 +14,29 @@ import (
 
 type LogStorage struct {
 	log        *slog.Logger
-	connection *sql.DB
+	connection driver.Conn
 }
 
-func NewLogStorage(log *slog.Logger, cfg config.LogStorage) (*LogStorage, error) {
+func NewLogStorage(ctx context.Context, log *slog.Logger, cfg config.LogStorage) (*LogStorage, error) {
 	const op = "storage.clickhouse.NewLogStorage"
 
-	connectionString := fmt.Sprintf("tcp://%s:%d", cfg.Host, cfg.Port)
-
-	conn, err := sql.Open("clickhouse", connectionString)
+	conn, err := clickhouse.Open(&clickhouse.Options{
+		Addr: []string{fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)},
+		Auth: clickhouse.Auth{
+			Database: "default",
+			Username: "default",
+			Password: "",
+		},
+	})
 	if err != nil {
-		return nil, err
+		return nil, wrapper.Wrap(op, err)
 	}
 
-	if err := conn.Ping(); err != nil {
-		return nil, wrapper.Wrap(op, errors.New("couldn't ping clickhouse"))
+	if err := conn.Ping(ctx); err != nil {
+		if exception, ok := err.(*clickhouse.Exception); ok {
+			log.Debug(fmt.Sprintf("Exception [%d] %s \n%s\n", exception.Code, exception.Message, exception.StackTrace))
+		}
+		return nil, wrapper.Wrap(op, err)
 	}
 
 	return &LogStorage{
@@ -37,23 +45,18 @@ func NewLogStorage(log *slog.Logger, cfg config.LogStorage) (*LogStorage, error)
 	}, nil
 }
 
-func (s *LogStorage) NewLogs(logs *[]models.GoodLog) error {
+func (s *LogStorage) NewLogs(ctx context.Context, logs *[]models.GoodLog) error {
 	const op = "storage.clickhouse.NewLogs"
 
 	log := s.log.With(slog.String("op", op))
 
-	scope, err := s.connection.Begin()
-	if err != nil {
-		return wrapper.Wrap(op, err)
-	}
-
-	batch, err := scope.Prepare(insertQuery)
+	batch, err := s.connection.PrepareBatch(ctx, insertQuery)
 	if err != nil {
 		return wrapper.Wrap(op, err)
 	}
 
 	for _, value := range *logs {
-		_, err := batch.Exec(
+		err := batch.Append(
 			value.ID,
 			value.ProjectID,
 			value.Name,
@@ -67,7 +70,7 @@ func (s *LogStorage) NewLogs(logs *[]models.GoodLog) error {
 		}
 	}
 
-	err = scope.Commit()
+	err = batch.Send()
 	if err != nil {
 		return wrapper.Wrap(op, err)
 	}

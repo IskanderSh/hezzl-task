@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"fmt"
+	"log/slog"
 
 	"github.com/IskanderSh/hezzl-task/internal/config"
 	"github.com/IskanderSh/hezzl-task/internal/lib/error/wrapper"
@@ -10,15 +11,16 @@ import (
 )
 
 type Storage struct {
-	db *sqlx.DB
+	log *slog.Logger
+	db  *sqlx.DB
 }
 
-func NewStorage(cfg config.Storage) (*Storage, error) {
+func NewStorage(log *slog.Logger, cfg config.Storage) (*Storage, error) {
 	const op = "storage.postgres.NewStorage"
 
 	connectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s sslmode=disable",
 		cfg.Host, cfg.Port, cfg.User, cfg.Password)
-	print(connectionString)
+	log.Info(fmt.Sprintf("connection string for postgres: %s", connectionString))
 
 	db, err := sqlx.Open("postgres", connectionString)
 	if err != nil {
@@ -29,5 +31,5 @@ func NewStorage(cfg config.Storage) (*Storage, error) {
 		return nil, wrapper.Wrap(op, err)
 	}
 
-	return &Storage{db: db}, nil
+	return &Storage{log: log, db: db}, nil
 }
