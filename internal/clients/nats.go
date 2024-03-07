@@ -1,6 +1,7 @@
 package clients
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -19,7 +20,7 @@ type NatsClient struct {
 }
 
 type LogsProvider interface {
-	NewLogs(logs *[]models.GoodLog) error
+	NewLogs(ctx context.Context, logs *[]models.GoodLog) error
 }
 
 func NewNatsClient(log *slog.Logger, cfg config.MessageBroker, provider LogsProvider) (*NatsClient, error) {
