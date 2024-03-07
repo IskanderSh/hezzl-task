@@ -20,7 +20,7 @@ func NewStorage(log *slog.Logger, cfg config.Storage) (*Storage, error) {
 
 	connectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s sslmode=disable",
 		cfg.Host, cfg.Port, cfg.User, cfg.Password)
-	log.Info(fmt.Sprintf("connection string for postgres: %s", connectionString))
+	log.Debug(fmt.Sprintf("connection string for postgres: %s", connectionString))
 
 	db, err := sqlx.Open("postgres", connectionString)
 	if err != nil {
