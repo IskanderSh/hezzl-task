@@ -15,8 +15,15 @@ jobs:
           port: 22
           script: |
             docker stop application
+            
             docker rm application
+            
+            docker rmi $(docker images --format '{{.Repository}}:{{.Tag}}' | grep -v postgres | grep -v nats | grep -v redis | grep -v yandex/clickhouse-server)
+            
             cd hezzl-task
+            
             git reset --hard
+            
             git pull origin master
+            
             make docker-up-prod
