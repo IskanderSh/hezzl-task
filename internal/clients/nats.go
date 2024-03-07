@@ -27,6 +27,7 @@ func NewNatsClient(log *slog.Logger, cfg config.MessageBroker, provider LogsProv
 	const op = "clients.nats.NewNatsClient"
 
 	connectString := fmt.Sprintf("nats://%s:%d", cfg.Host, cfg.Port)
+	log.Debug(fmt.Sprintf("connection string for nats: %s", connectString))
 
 	nc, err := nats.Connect(connectString)
 	if err != nil {
