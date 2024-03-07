@@ -3,6 +3,7 @@ package redis
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/IskanderSh/hezzl-task/internal/config"
 	"github.com/IskanderSh/hezzl-task/internal/lib/error/wrapper"
@@ -17,15 +18,25 @@ const (
 )
 
 type Cache struct {
+	log    *slog.Logger
 	client *redis.Client
 }
 
-func NewCache(cfg config.Cache) *Cache {
+func NewCache(ctx context.Context, log *slog.Logger, cfg config.Cache) (*Cache, error) {
+	const op = "storage.cache.NewCache"
+
+	connString := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
+	log.Debug(fmt.Sprintf("connection string for cache: %s", connString))
+
 	client := redis.NewClient(&redis.Options{
-		Addr: fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
+		Addr: connString,
 	})
 
-	return &Cache{client: client}
+	if err := client.Ping(ctx).Err(); err != nil {
+		return nil, wrapper.Wrap(op, err)
+	}
+
+	return &Cache{log: log, client: client}, nil
 }
 
 func (c *Cache) GetMaxPriority(ctx context.Context) (string, error) {

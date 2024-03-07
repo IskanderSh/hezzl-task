@@ -29,10 +29,13 @@ func NewServer(log *slog.Logger, cfg *config.Config) *Server {
 	}
 	log.Info("successfully create connection to storage")
 
-	cache := redis.NewCache(cfg.Cache)
+	ctx := context.Background()
+	cache, err := redis.NewCache(ctx, log, cfg.Cache)
+	if err != nil {
+		panic(err)
+	}
 	log.Info("successfully create connection to cache")
 
-	ctx := context.Background()
 	logStorage, err := clickhouse.NewLogStorage(ctx, log, cfg.LogStorage)
 	if err != nil {
 		panic(err)
